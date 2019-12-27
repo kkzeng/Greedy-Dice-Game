@@ -1,9 +1,9 @@
 // CONSTANTS
 const NO_OF_SIDES = 6;
-const WINNING_SCORE = 10;
+const WINNING_SCORE = 50;
 
 // Keep track of scores
-var scores, curRound, activePlayer, gameEnded;
+var scores, curRound, activePlayer, gameEnded, prevDiceRoll, dice;
 
 // Initialize the game
 initialize();
@@ -18,10 +18,10 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
     // Display dice
     document.querySelector('.dice').style.display = 'block';
 
-    // Anonymous function for click event
-
-    // Generate random number
-    var dice = generateRandom();
+    // Store the previous dice roll
+    prevDiceRoll = dice;
+    // Roll the dice
+    dice = generateRandom();
 
     // Display the result
     diceDOM.style.display = 'block';
@@ -30,12 +30,18 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
     diceDOM.src = 'dice-' + dice + '.png';
     
     // Update score if rolled was not 1
-    if(dice !== 1) {
-        curRound += dice;
-        document.getElementById('current-' + activePlayer).textContent = curRound;
+    if(dice === 1) {
+        switchPlayer();
+    }
+    else if(dice === 6 && prevDiceRoll === 6) {
+        // Lose entire score
+        scores[activePlayer] = 0;
+        document.querySelector('#score-'+activePlayer).textContent = scores[activePlayer];
+        switchPlayer();
     }
     else {
-        switchPlayer();
+        curRound += dice;
+        document.getElementById('current-' + activePlayer).textContent = curRound;
     }
 });
 
@@ -70,6 +76,10 @@ function initialize() {
     curRound = 0;
     activePlayer = 0;
     gameEnded = false;
+
+    // 0 acts as unitialized value since values of dice can only be [1,6]
+    dice = 0;
+    prevDiceRoll = 0;
     
     // Start dice off by displaying nothing
     document.querySelector('.dice').style.display = 'none';
@@ -113,9 +123,6 @@ function switchPlayer() {
     activePlayer = activePlayer === 0? 1: 0;
     document.querySelector('.player-0-panel').classList.toggle('active'); // toggle removes or adds based on if class 'active' is in classlist
     document.querySelector('.player-1-panel').classList.toggle('active');
-
-    // Hide dice
-    diceDOM.style.display = 'none';
 }
 
 function wonGame() {
