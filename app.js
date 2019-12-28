@@ -1,46 +1,48 @@
 // CONSTANTS
 const NO_OF_SIDES = 6;
-const WINNING_SCORE = 50;
+const DEFAULT_SCORE_LIMIT = 50;
 
 // Keep track of scores
-var scores, curRound, activePlayer, gameEnded, prevDiceRoll, dice;
+var scores, curRound, activePlayer, gameEnded, prevDiceRoll, dice1, dice2;
+
+var diceDOM1 = document.querySelector('.dice1');
+var diceDOM2 = document.querySelector('.dice2');
 
 // Initialize the game
 initialize();
-
-var diceDOM = document.querySelector('.dice');
 
 // Handle the ROLL button event
 document.querySelector('.btn-roll').addEventListener('click', function() {
     // If game is over, don't do anything
     if(gameEnded) return;
 
-    // Display dice
-    document.querySelector('.dice').style.display = 'block';
-
     // Store the previous dice roll
-    prevDiceRoll = dice;
+    prevDiceRoll1 = dice1;
+    prevDiceRoll2 = dice2;
     // Roll the dice
-    dice = generateRandom();
+    dice1 = generateRandom();
+    dice2 = generateRandom();
 
     // Display the result
-    diceDOM.style.display = 'block';
+    diceDOM1.style.display = 'block';
+    diceDOM2.style.display = 'block';
     
     // Change the image to the correct one
-    diceDOM.src = 'dice-' + dice + '.png';
+    diceDOM1.src = 'dice-' + dice1 + '.png';
+    diceDOM2.src = 'dice-' + dice2 + '.png';
     
-    // Update score if rolled was not 1
-    if(dice === 1) {
+    // If either dice is 1, end game
+    if(dice1 === 1 || dice2 === 1) {
         switchPlayer();
     }
-    else if(dice === 6 && prevDiceRoll === 6) {
+    else if((dice1 === 6 && prevDiceRoll1 === 6) || (dice2 == 6 && prevDiceRoll2 === 6)) {
         // Lose entire score
         scores[activePlayer] = 0;
         document.querySelector('#score-'+activePlayer).textContent = scores[activePlayer];
         switchPlayer();
     }
     else {
-        curRound += dice;
+        curRound += (dice1 + dice2);
         document.getElementById('current-' + activePlayer).textContent = curRound;
     }
 });
@@ -57,7 +59,7 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
     document.getElementById('score-' + activePlayer).textContent = scores[activePlayer];
 
     // Also check if player has won the game
-    if(scores[activePlayer] >= WINNING_SCORE) {
+    if(scores[activePlayer] >= getScoreLimit()) {
         wonGame();
     }
     else {
@@ -78,11 +80,14 @@ function initialize() {
     gameEnded = false;
 
     // 0 acts as unitialized value since values of dice can only be [1,6]
-    dice = 0;
-    prevDiceRoll = 0;
+    dice1 = 0;
+    dice2 = 0;
+    prevDiceRoll1 = 0;
+    prevDiceRoll2 = 0;
     
     // Start dice off by displaying nothing
-    document.querySelector('.dice').style.display = 'none';
+    diceDOM1.style.display = 'none';
+    diceDOM2.style.display = 'none';
     
     // Initialize scores to 0
     document.getElementById('score-0').textContent = '0';
@@ -127,7 +132,8 @@ function switchPlayer() {
 
 function wonGame() {
     var playerPanelDOM = document.querySelector('.player-' + activePlayer + '-panel');
-    diceDOM.style.display = 'none';
+    diceDOM1.style.display = 'none';
+    diceDOM2.style.display = 'none';
 
     // Set to winner
     document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
@@ -138,4 +144,14 @@ function wonGame() {
 
     // The game has ended
     gameEnded = true;
+}
+
+function getScoreLimit() {
+    var scoreLimit = document.querySelector('#score-field').value;
+    if(scoreLimit) {
+        return parseInt(scoreLimit);
+    }
+    else {
+        return DEFAULT_SCORE_LIMIT;
+    }
 }
